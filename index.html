@@ -1,16 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head><title>Hello Vue.js</title></head>
+  <head>
+		<title>Hello Vue.js</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css" />
+	</head>
   <body>
 
     <div id="app">
-      <p>{{ 3 + 5 }}</p>
+			<h1>{{ nbNames }} personne{{ nbNames > 1 ? 's': '' }}</h1>
+			<input type="text" v-model="q" />
+			<ul>
+				<li v-for="(name, index) in filteredNames">
+					{{ name }} <button @click="removeName(index)">X</button>
+				</li>
+			</ul>
+			<input type="text" v-model="newName" @keyup.enter="addName"/>
     </div>
 
-    <script src="https://unpkg.com/vue"></script>
+		<script src="https://unpkg.com/vue"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/all.js"></script>
     <script>
       new Vue({
-        el: '#app'
+        el: '#app',
+				data: {
+					q: '',
+					newName: '',
+					names: [
+						'Gildas',
+						'Ronan',
+						'Enora',
+						'Maxime',
+						'Ophelie',
+						'Cedric'
+					]
+				},
+				beforeMount() {
+					var names = localStorage.getItem('names')
+					if (names) {
+						this.names = JSON.parse(names)
+					}
+					this.saveNames()
+				},
+				watch: {
+					names: 'saveNames'
+				},
+				computed: {
+					nbNames() {
+						return this.names.length;
+					},
+					filteredNames() {
+						return this.names.filter((name) => {
+							return name.toLowerCase().includes(this.q.toLowerCase())
+						})
+					}
+				},
+				methods: {
+					addName: function() {
+						if (!this.newName) return
+						this.names.push(this.newName);
+						this.newName = '';
+					},
+					removeName(index) {
+						this.names.splice(index, 1);
+					},
+					saveNames() {
+						localStorage.setItem('names', JSON.stringify(this.names))
+					}
+				}
       })
     </script>
 
