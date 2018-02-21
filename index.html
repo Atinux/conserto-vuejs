@@ -70,7 +70,6 @@
 						this.users = this.users.filter((user) => user.id !== id)
 					},
 					saveUsers() {
-						console.log('Save users')
 						localStorage.setItem('users', JSON.stringify(this.users))
 					}
 				}
