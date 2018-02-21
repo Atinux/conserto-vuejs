@@ -8,18 +8,56 @@
 
     <div id="app" class="container">
 			<h1>{{ nbUsers }} personne{{ nbUsers > 1 ? 's': '' }}</h1>
-			<input type="text" v-model="q" />
-			<ul>
-				<li v-for="user in filteredUsers">
-					{{ user.name }} <button @click="removeUser(user.id)">X</button>
-				</li>
-			</ul>
-			<input type="text" v-model="newName" @keyup.enter="addUser"/>
+			<p><input type="text" v-model="q" placeholder="Search a user" /></p>
+			<user-item v-for="user in filteredUsers" :key="user.id" :user="user" @update="updateUser" @remove="removeUser"></user-item>
+			<p><input type="text" v-model="newName" @keyup.enter="addUser" placeholder="Add a user"/></p>
     </div>
 
 		<script src="https://unpkg.com/vue"></script>
 		<script defer src="https://use.fontawesome.com/releases/v5.0.0/js/all.js"></script>
     <script>
+			Vue.component('user-item', {
+				template: `
+				<div>
+					<input v-if="editing" ref="editInput" type="text" v-model="editName" @keyup.enter="updateUser" @blur="cancelEdit" @keyup.esc="cancelEdit"/>
+					<div v-else @dblclick="editMode">
+						{{ user.name }} <button @click="removeUser">X</button>
+					</div>
+				</div>
+				`,
+				props: {
+					user: {
+						type: Object,
+						required: true
+					}
+				},
+				data() {
+					return {
+						editing: false,
+						editName: this.user.name
+					}
+				},
+				methods: {
+					editMode() {
+						this.editing = true;
+						this.$nextTick(() => {
+							this.$refs.editInput.focus()
+						})
+					},
+					cancelEdit() {
+						this.editing = false;
+						this.editName = this.user.name;
+					},
+					updateUser() {
+						this.$emit('update', this.user.id, this.editName)
+						this.editing = false;
+					},
+					removeUser() {
+						this.$emit('remove', this.user.id)
+					}
+				}
+			})
+
       new Vue({
         el: '#app',
 				data: {
@@ -66,10 +104,15 @@
 						});
 						this.newName = '';
 					},
+					updateUser(id, name) {
+						const user = this.users.find((user) => user.id === id)
+						user.name = name
+					},
 					removeUser(id) {
 						this.users = this.users.filter((user) => user.id !== id)
 					},
 					saveUsers() {
+						console.log('Save users')
 						localStorage.setItem('users', JSON.stringify(this.users))
 					}
 				}
