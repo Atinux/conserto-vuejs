@@ -6,12 +6,13 @@
 	</head>
   <body>
 
-    <div id="app">
+    <div id="app" class="container">
 			<h1>{{ nbNames }} personne{{ nbNames > 1 ? 's': '' }}</h1>
 			<input type="text" v-model="q" />
 			<ul>
-				<li v-for="(name, index) in filteredNames">
-					{{ name }} <button @click="removeName(index)">X</button>
+				<li v-for="(name, index) in filteredNames" @dblclick="editName(index)">
+					<div v-if="editingIndex !== index">{{ name }} <button @click="removeName(index)">X</button></div>
+					<input v-else type="text" v-model="editingName" @keyup.enter="saveName(index)"/>
 				</li>
 			</ul>
 			<input type="text" v-model="newName" @keyup.enter="addName"/>
@@ -25,6 +26,8 @@
 				data: {
 					q: '',
 					newName: '',
+					editingName: '',
+					editingIndex: -1,
 					names: [
 						'Gildas',
 						'Ronan',
@@ -59,6 +62,15 @@
 						if (!this.newName) return
 						this.names.push(this.newName);
 						this.newName = '';
+					},
+					saveName(index) {
+						this.editingIndex = -1
+						this.$set(this.names, index, this.editingName)
+						this.editingName = ''
+					},
+					editName(index) {
+						this.editingIndex = index
+						this.editingName = this.names[index]
 					},
 					removeName(index) {
 						this.names.splice(index, 1);
