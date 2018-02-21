@@ -7,15 +7,14 @@
   <body>
 
     <div id="app" class="container">
-			<h1>{{ nbNames }} personne{{ nbNames > 1 ? 's': '' }}</h1>
+			<h1>{{ nbUsers }} personne{{ nbUsers > 1 ? 's': '' }}</h1>
 			<input type="text" v-model="q" />
 			<ul>
-				<li v-for="(name, index) in filteredNames" @dblclick="editName(index)">
-					<div v-if="editingIndex !== index">{{ name }} <button @click="removeName(index)">X</button></div>
-					<input v-else type="text" v-model="editingName" @keyup.enter="saveName(index)"/>
+				<li v-for="user in filteredUsers">
+					{{ user.name }} <button @click="removeUser(user.id)">X</button>
 				</li>
 			</ul>
-			<input type="text" v-model="newName" @keyup.enter="addName"/>
+			<input type="text" v-model="newName" @keyup.enter="addUser"/>
     </div>
 
 		<script src="https://unpkg.com/vue"></script>
@@ -26,57 +25,53 @@
 				data: {
 					q: '',
 					newName: '',
-					editingName: '',
-					editingIndex: -1,
-					names: [
-						'Gildas',
-						'Ronan',
-						'Enora',
-						'Maxime',
-						'Ophelie',
-						'Cedric'
+					users: [
+						{ id: 1, name: 'Gildas' },
+						{ id: 2, name: 'Ronan' },
+						{ id: 3, name: 'Enora' },
+						{ id: 4, name: 'Maxime' },
+						{ id: 5, name: 'Ophelie' },
+						{ id: 6, name: 'Cedric' }
 					]
 				},
 				beforeMount() {
-					var names = localStorage.getItem('names')
-					if (names) {
-						this.names = JSON.parse(names)
+					var users = localStorage.getItem('users')
+					if (users) {
+						this.users = JSON.parse(users)
 					}
-					this.saveNames()
+					this.saveUsers()
 				},
 				watch: {
-					names: 'saveNames'
+					users: {
+						deep: true,
+						handler: 'saveUsers'
+					}
 				},
 				computed: {
-					nbNames() {
-						return this.names.length;
+					nbUsers() {
+						return this.users.length;
 					},
-					filteredNames() {
-						return this.names.filter((name) => {
-							return name.toLowerCase().includes(this.q.toLowerCase())
+					filteredUsers() {
+						return this.users.filter((user) => {
+							return user.name.toLowerCase().includes(this.q.toLowerCase())
 						})
 					}
 				},
 				methods: {
-					addName: function() {
+					addUser: function() {
 						if (!this.newName) return
-						this.names.push(this.newName);
+						this.users.push({
+							id: Date.now(),
+							name: this.newName
+						});
 						this.newName = '';
 					},
-					saveName(index) {
-						this.editingIndex = -1
-						this.$set(this.names, index, this.editingName)
-						this.editingName = ''
+					removeUser(id) {
+						this.users = this.users.filter((user) => user.id !== id)
 					},
-					editName(index) {
-						this.editingIndex = index
-						this.editingName = this.names[index]
-					},
-					removeName(index) {
-						this.names.splice(index, 1);
-					},
-					saveNames() {
-						localStorage.setItem('names', JSON.stringify(this.names))
+					saveUsers() {
+						console.log('Save users')
+						localStorage.setItem('users', JSON.stringify(this.users))
 					}
 				}
       })
